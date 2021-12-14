@@ -1,0 +1,86 @@
+#!/sbin/openrc-run
+command="offlineimap"
+name="offlineimap"
+command_args="-s -u syslog"
+pidfile="/var/run/offlineimap.pid"
+command_user="1000:1000"
+stdout_logger="logger -p mail.info"
+stderr_logger="logger -p mail.error"
+command_background="true"
+start_stop_daemon_args="--nicelevel 19 \
+     					--ionice 3 \
+     					--wait 10000 \
+					   "
+umask="0027"
+command_progress="true"
+retry="\
+SIGINT/30 \
+SIGINT/10 \
+SIGTERM/10 \
+SIGTERM/10 \
+SIGTERM/10 \
+SIGTERM/10 \
+SIGKILL/10 \
+"
+
+
+description="imap sync"
+
+depend(){
+need net
+}
+
+#status() {
+#    f=0
+#    for i in $( cat /etc/nodelist ); do
+#        test -f /var/run/$i/offlineimap.pid && f=$(($f + 1))
+#    done
+#	if service_stopping; then
+#		ewarn "status: stopping"
+#		return 4
+#	elif service_starting; then
+#		ewarn "status: starting"
+#		return 8
+#	elif service_inactive && test $f = 0 ; then
+#		ewarn "status: inactive"
+#		return 16
+#	elif service_crashed; then
+#		eerror "status: crashed"
+#		return 32
+#	elif test $f -gt 0 ; then
+#		einfo "status: started: $f nodes"
+#        mark_service_started offlineimap
+#		return 0
+#	elif test $f = 0 ; then
+#		einfo "status: stopped"
+#        mark_service_stopped offlineimap
+#		return 3
+#	else
+#		einfo "status: stopped"
+#        mark_service_stopped offlineimap
+#		return 3
+#	fi
+#}
+#
+#
+#start() {
+#    ebegin "offlineimap starting"
+#    mkdir -p /var/run/$(hostname)
+#	default_start
+#  	eend $?
+#}
+#
+#stop() {
+#    ebegin "offlineimap stopping"
+#    for i in $(cat /etc/nodelist); do \
+#        pidfile="/var/run/${i}/offlineimap.pid"
+#        test -f $pidfile \
+#        &&  if test $i = $(hostname); then
+#			default_stop
+#            else
+#                einfo "calling node $i to stop offlineimap ..."
+#                sudo -u 1000 ssh $i sudo rc-service offlineimap stop
+#            fi
+#    done
+#    eend $(status 1>&2 2> /dev/null)
+#}
